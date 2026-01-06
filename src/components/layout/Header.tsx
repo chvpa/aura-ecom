@@ -96,8 +96,7 @@ export function Header() {
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
-              <span className="text-2xl font-bold text-primary">Odora</span>
-              <span className="text-2xl font-light">Perfumes</span>
+              <span className="text-2xl font-bold">ODORA</span>
             </Link>
 
             {/* Navegación - Desktop */}
@@ -369,8 +368,7 @@ export function Header() {
                   <SheetTitle className="sr-only">Menú</SheetTitle>
                 </SheetHeader>
                 <div className="flex items-center space-x-2 mb-6">
-                  <span className="text-2xl font-bold text-primary">Odora</span>
-                  <span className="text-2xl font-light">Perfumes</span>
+                  <span className="text-2xl font-bold">ODORA</span>
                 </div>
 
                 <div className="mt-6 space-y-4">
@@ -542,8 +540,7 @@ export function Header() {
 
             {/* Logo - Centrado absolutamente */}
             <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center space-x-2">
-              <span className="text-xl font-bold text-primary">Odora</span>
-              <span className="text-xl font-light">Perfumes</span>
+              <span className="text-xl font-bold">ODORA</span>
             </Link>
 
             {/* Carrito y Perfil */}
