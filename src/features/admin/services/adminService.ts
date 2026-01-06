@@ -127,7 +127,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 export async function getAllOrders(
   filters?: OrderFilters
 ): Promise<OrderWithItems[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   let query = supabase.from('orders').select('*');
 

@@ -53,7 +53,7 @@ export function CartSummary({
           size="lg"
         >
           <CreditCard className="h-5 w-5 mr-2" />
-          Proceder al Checkout
+          Finalizar compra
         </Button>
       )}
     </div>

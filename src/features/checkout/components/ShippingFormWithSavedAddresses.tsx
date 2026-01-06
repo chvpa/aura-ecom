@@ -10,13 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { Textarea } from '@/components/ui/textarea';
 import { PARAGUAY_DEPARTMENTS, PARAGUAY_CITIES } from '@/lib/constants/paraguay';
 import type { CheckoutFormData } from '@/lib/validations/checkout';
@@ -122,27 +116,23 @@ export function ShippingFormWithSavedAddresses({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Departamento *</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      // Resetear ciudad cuando cambia departamento
-                      form.setValue('shipping.city', '');
-                    }}
-                    value={field.value || ''}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un departamento" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PARAGUAY_DEPARTMENTS.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={PARAGUAY_DEPARTMENTS.map((dept) => ({
+                        value: dept,
+                        label: dept,
+                      }))}
+                      value={field.value || ''}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Resetear ciudad cuando cambia departamento
+                        form.setValue('shipping.city', '');
+                      }}
+                      placeholder="Selecciona un departamento"
+                      searchPlaceholder="Buscar departamento..."
+                      emptyText="No se encontraron departamentos"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -154,30 +144,28 @@ export function ShippingFormWithSavedAddresses({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ciudad *</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ''}
-                    disabled={!selectedDepartment || availableCities.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            !selectedDepartment
-                              ? 'Selecciona primero un departamento'
-                              : 'Selecciona una ciudad'
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availableCities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      options={availableCities.map((city) => ({
+                        value: city,
+                        label: city,
+                      }))}
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                      placeholder={
+                        !selectedDepartment
+                          ? 'Selecciona primero un departamento'
+                          : 'Selecciona o escribe una ciudad'
+                      }
+                      searchPlaceholder="Buscar ciudad..."
+                      emptyText="No se encontraron ciudades"
+                      disabled={!selectedDepartment || availableCities.length === 0}
+                      allowCustom={true}
+                      onCustomValue={(value) => {
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
