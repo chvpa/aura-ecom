@@ -223,14 +223,22 @@ export async function performAISearch(
   const filters = await contextToFilters(parsed.context);
 
   // 3. Buscar productos con los filtros
-  const { products, total } = await searchProductsWithFilters(filters);
+  let { products, total } = await searchProductsWithFilters(filters);
 
   // 4. Generar explicación (usar la del contexto parseado o generar una nueva)
-  const explanation =
+  let explanation =
     parsed.explanation ||
     (await generateExplanation(products, query, parsed.context));
 
-  // 5. Guardar en historial (si hay usuario)
+  // 5. Si no hay productos, hacer búsqueda sin filtros para mostrar fallback
+  if (products.length === 0) {
+    const fallback = await getProducts({}, { page: 1, pageSize: 4 });
+    products = fallback.products;
+    total = fallback.total;
+    explanation = (parsed.explanation || '') + '\n\nNo encontré exactamente lo que buscás, pero te muestro algunas opciones que podrían gustarte 💫';
+  }
+
+  // 6. Guardar en historial (si hay usuario)
   if (userId) {
     const productIds = products.map((p) => p.id);
     await saveSearchHistory(userId, query, parsed.context, productIds).catch(

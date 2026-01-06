@@ -51,15 +51,15 @@ export function StickyAddToCart({ product, onAddToCart }: StickyAddToCartProps) 
           <div className="flex-1 min-w-0">
             {hasDiscount && priceInfo ? (
               <div className="space-y-0.5">
-                <p className="text-lg font-bold text-primary">
-                  {priceInfo.discounted}
-                </p>
-                <p className="text-xs text-muted-foreground line-through">
+                <p className="text-xs text-red-800/70 line-through">
                   {priceInfo.original}
+                </p>
+                <p className="text-lg font-bold text-black">
+                  {priceInfo.discounted}
                 </p>
               </div>
             ) : (
-              <p className="text-lg font-bold text-primary">
+              <p className="text-lg font-bold text-black">
                 {formatPrice(product.price_pyg)}
               </p>
             )}
@@ -71,7 +71,7 @@ export function StickyAddToCart({ product, onAddToCart }: StickyAddToCartProps) 
           </div>
           <Button
             size="lg"
-            className="flex-shrink-0 font-semibold"
+            className="flex-shrink-0 font-semibold bg-green-600 hover:bg-green-700 text-white"
             disabled={product.stock === 0}
             onClick={onAddToCart}
           >

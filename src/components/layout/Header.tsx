@@ -284,12 +284,12 @@ export function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link href="/comparar">Comparador</Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link href="/tendencias">Tendencias 🥵🔥</Link>
+                    <Link href="/comparar" className="flex items-center gap-2">
+                      Comparador
+                      <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-full font-medium">
+                        Próximamente
+                      </span>
+                    </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
@@ -474,25 +474,16 @@ export function Header() {
                       href="/comparar"
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        'block px-3 py-2.5 rounded-md text-sm font-medium transition-colors text-neutral-900',
+                        'flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-colors text-neutral-900',
                         pathname === '/comparar' || pathname.startsWith('/comparar/')
                           ? 'bg-primary text-white'
                           : 'hover:bg-primary/10 hover:text-primary'
                       )}
                     >
-                      Comparador
-                    </Link>
-                    <Link
-                      href="/tendencias"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        'block px-3 py-2.5 rounded-md text-sm font-medium transition-colors text-neutral-900',
-                        pathname === '/tendencias' || pathname.startsWith('/tendencias/')
-                          ? 'bg-primary text-white'
-                          : 'hover:bg-primary/10 hover:text-primary'
-                      )}
-                    >
-                      Tendencias 🥵🔥
+                      <span>Comparador</span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded-full font-medium">
+                        Próximamente
+                      </span>
                     </Link>
                   </nav>
 

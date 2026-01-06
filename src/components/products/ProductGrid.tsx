@@ -20,7 +20,7 @@ export function ProductGrid({
   products,
   loading = false,
   matchPercentages,
-  showWishlist = false,
+  showWishlist = true,
   emptyStateTitle,
   emptyStateDescription,
 }: ProductGridProps) {

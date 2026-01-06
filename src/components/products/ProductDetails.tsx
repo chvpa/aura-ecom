@@ -121,13 +121,13 @@ export function ProductDetails({
         {/* Precio */}
         <div>
           {hasDiscount && priceInfo ? (
-            <div className="space-y-2">
+            <div className="space-y-1">
+              <span className="text-xl font-medium text-red-800/70 line-through block">
+                {priceInfo.original}
+              </span>
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-bold text-primary">
+                <span className="text-3xl font-bold text-black">
                   {priceInfo.discounted}
-                </span>
-                <span className="text-xl text-muted-foreground line-through">
-                  {priceInfo.original}
                 </span>
                 <Badge variant="destructive" className="text-sm">
                   -{priceInfo.discountPercentage}%
@@ -135,7 +135,7 @@ export function ProductDetails({
               </div>
             </div>
           ) : (
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-3xl font-bold text-black">
               {formatPrice(product.price_pyg)}
             </p>
           )}
@@ -234,7 +234,7 @@ export function ProductDetails({
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               size="lg"
-              className="flex-1 font-semibold"
+              className="flex-1 font-semibold bg-green-600 hover:bg-green-700 text-white"
               disabled={product.stock === 0}
               onClick={handleAddToCart}
             >

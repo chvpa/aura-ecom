@@ -129,9 +129,10 @@ export function HeroSearch() {
             <Button
               type="submit"
               disabled={!searchQuery.trim()}
-              className="h-12 rounded-lg px-6 font-medium transition-all shadow-lg shadow-primary/30 disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
+              className="h-12 rounded-lg px-3 sm:px-6 font-medium transition-all shadow-lg shadow-primary/30 disabled:bg-neutral-200 disabled:text-neutral-400 disabled:shadow-none"
             >
-              Buscar con IA
+              <Sparkles className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">Buscar con IA</span>
             </Button>
           </div>
         </form>

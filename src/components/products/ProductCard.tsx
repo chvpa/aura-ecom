@@ -24,7 +24,7 @@ interface ProductCardProps {
 export function ProductCard({
   product,
   matchPercentage,
-  showWishlist = false,
+  showWishlist = true,
 }: ProductCardProps) {
   const { addItem } = useCart();
   const hasDiscount =
@@ -70,16 +70,26 @@ export function ProductCard({
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               />
-              {matchPercentage !== undefined && (
-                <div className="absolute top-2 right-2">
-                  <MatchBadge percentage={matchPercentage} size="sm" />
-                </div>
-              )}
               {hasDiscount && (
-                <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 z-10">
                   <Badge variant="destructive" className="font-semibold">
                     -{priceInfo?.discountPercentage}%
                   </Badge>
+                </div>
+              )}
+              {matchPercentage !== undefined && (
+                <div className={`absolute ${hasDiscount ? 'top-10' : 'top-2'} left-2 z-10`}>
+                  <MatchBadge percentage={matchPercentage} size="sm" />
+                </div>
+              )}
+              {showWishlist && (
+                <div className="absolute top-2 right-2 z-10">
+                  <WishlistButton
+                    productId={product.id}
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 bg-white/90 hover:bg-white shadow-md backdrop-blur-sm"
+                  />
                 </div>
               )}
               {product.stock > 0 && product.stock < 5 && (
@@ -94,7 +104,7 @@ export function ProductCard({
         </CardHeader>
         <CardContent className="p-4 flex-1 flex flex-col">
           <Link href={`/perfumes/${product.slug}`}>
-            <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm mb-1 line-clamp-2">
               {product.name}
             </h3>
             <p className="text-xs text-muted-foreground mb-2">
@@ -128,13 +138,6 @@ export function ProductCard({
             <ShoppingCart className="h-4 w-4 mr-2" />
             {product.stock === 0 ? 'Agotado' : 'Agregar'}
           </Button>
-          {showWishlist && (
-            <WishlistButton
-              productId={product.id}
-              variant="outline"
-              size="sm"
-            />
-          )}
         </CardFooter>
       </Card>
     </motion.div>

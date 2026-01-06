@@ -41,7 +41,7 @@ export function WishlistButton({
           'h-4 w-4',
           size === 'lg' && 'h-5 w-5',
           size === 'sm' && 'h-3.5 w-3.5',
-          inWishlist && 'fill-primary text-primary'
+          inWishlist && 'fill-red-500 text-red-500'
         )}
       />
       {showLabel && (
