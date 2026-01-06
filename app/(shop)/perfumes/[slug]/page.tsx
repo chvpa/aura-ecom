@@ -52,7 +52,7 @@ export async function generateMetadata({
           alt: product.name,
         },
       ],
-      type: 'product',
+      type: 'website',
       siteName: 'Odora Perfumes',
     },
     twitter: {
