@@ -1,0 +1,1001 @@
+---
+# .cursorrules
+
+## Proyecto: Aura Perfumes Ecommerce
+
+### Stack
+- Next.js 14 (App Router)
+- TypeScript (strict mode)
+- Tailwind CSS + shadcn/ui
+- Supabase (PostgreSQL)
+- Zustand (state management)
+- Anthropic Claude API
+- bun (package manager)
+
+---
+
+## 🎯 PRINCIPIOS FUNDAMENTALES
+
+### 1. Código de Producción Siempre
+- ❌ NUNCA crear código temporal o "placeholder"
+- ❌ NUNCA usar `// TODO` o `// FIXME` sin implementación inmediata
+- ❌ NUNCA dejar funciones vacías o comentadas
+- ✅ SIEMPRE código completo, funcional y production-ready
+- ✅ SIEMPRE implementar la solución definitiva desde el inicio
+
+### 2. Build Obligatoria al Finalizar Sprint
+- Después de completar cada sprint ejecutar: `bun run build`
+- Fix de TODOS los errores de TypeScript antes de continuar
+- Fix de TODOS los warnings críticos
+- Verificar que no hay imports no usados
+- Verificar que no hay variables no utilizadas
+
+### 3. shadcn/ui es OBLIGATORIO
+- ✅ SIEMPRE usar componentes de shadcn/ui
+- ❌ NUNCA crear componentes UI desde cero si existe en shadcn
+- ❌ NUNCA usar otras librerías de componentes (MUI, Ant Design, etc.)
+- Si necesitas un componente: `bunx shadcn-ui@latest add [component]`
+- Componentes custom solo para lógica de negocio específica
+
+### 4. Optimización de Base de Datos
+- ✅ SIEMPRE usar select específico: `.select('id, name, price')`
+- ❌ NUNCA usar `.select('*')` sin razón explícita
+- ✅ SIEMPRE usar paginación para listas
+- ✅ SIEMPRE implementar caché cuando sea apropiado
+- ✅ SIEMPRE usar índices en queries complejas
+- ❌ NUNCA hacer queries en loops (usar batch queries)
+- ❌ NUNCA hacer múltiples queries si se puede hacer en una
+
+---
+
+## 📝 REGLAS DE CÓDIGO
+
+### TypeScript
+```typescript
+// ✅ CORRECTO - Tipos estrictos
+interface ProductCardProps {
+  product: Product;
+  matchPercentage?: number;
+  onAddToCart: (productId: string) => Promise<void>;
+}
+
+export function ProductCard({ 
+  product, 
+  matchPercentage,
+  onAddToCart 
+}: ProductCardProps) {
+  // Implementación completa
+}
+
+// ❌ INCORRECTO - any, tipos implícitos
+function ProductCard(props: any) {
+  // ...
+}
+```
+
+### Componentes
+- SIEMPRE usar componentes funcionales con TypeScript
+- SIEMPRE tipar props con interface
+- SIEMPRE destructurar props
+- SIEMPRE exportar tipos junto con componentes
+- NUNCA usar `React.FC` o `React.FunctionComponent`
+
+```typescript
+// ✅ CORRECTO
+interface ButtonProps {
+  variant: 'primary' | 'secondary';
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+export function CustomButton({ variant, onClick, children }: ButtonProps) {
+  return (
+    <Button 
+      variant={variant === 'primary' ? 'default' : 'secondary'}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  );
+}
+
+// ❌ INCORRECTO - sin tipos, sin shadcn
+export const CustomButton: React.FC = (props) => {
+  return <button className="custom-btn">{props.children}</button>
+}
+```
+
+### Server Components vs Client Components
+```typescript
+// ✅ CORRECTO - Server Component (default)
+// app/products/page.tsx
+import { getProducts } from '@/features/products/services/productService';
+
+export default async function ProductsPage() {
+  const products = await getProducts();
+  return <ProductGrid products={products} />;
+}
+
+// ✅ CORRECTO - Client Component (solo cuando sea necesario)
+// features/cart/components/CartDrawer.tsx
+'use client';
+
+import { useCartStore } from '@/features/cart/store/cartStore';
+
+export function CartDrawer() {
+  const { items } = useCartStore();
+  // ...
+}
+
+// ❌ INCORRECTO - Client component innecesario
+'use client';
+
+export default function ProductsPage() {
+  // No necesita interactividad, debería ser Server Component
+}
+```
+
+### Supabase Queries - Optimización Obligatoria
+
+```typescript
+// ✅ CORRECTO - Query optimizado
+async function getProducts(page: number = 1, limit: number = 20) {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      name,
+      slug,
+      price_pyg,
+      main_image_url,
+      stock,
+      brand:brands(name, slug)
+    `)
+    .eq('is_active', true)
+    .range(from, to)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+// ❌ INCORRECTO - Sin paginación, select *
+async function getProducts() {
+  const { data } = await supabase
+    .from('products')
+    .select('*');
+  return data;
+}
+
+// ✅ CORRECTO - Batch query en vez de loop
+async function getProductsWithMatches(userId: string, productIds: string[]) {
+  const { data } = await supabase
+    .from('product_matches')
+    .select('product_id, match_percentage')
+    .eq('user_id', userId)
+    .in('product_id', productIds);
+  
+  return data;
+}
+
+// ❌ INCORRECTO - Query en loop
+async function getProductsWithMatches(userId: string, productIds: string[]) {
+  const matches = [];
+  for (const id of productIds) {
+    const { data } = await supabase
+      .from('product_matches')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('product_id', id)
+      .single();
+    matches.push(data);
+  }
+  return matches;
+}
+```
+
+### Caché de IA
+```typescript
+// ✅ CORRECTO - Con caché
+async function calculateProductMatch(userId: string, productId: string) {
+  // 1. Verificar caché primero
+  const cached = await supabase
+    .from('product_matches')
+    .select('match_percentage, expires_at')
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .single();
+
+  if (cached.data && new Date(cached.data.expires_at) > new Date()) {
+    return cached.data.match_percentage;
+  }
+
+  // 2. Si no hay caché válido, calcular
+  const profile = await getUserProfile(userId);
+  const product = await getProduct(productId);
+  
+  const matchPercentage = await callClaudeAPI(profile, product);
+
+  // 3. Guardar en caché (7 días)
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
+
+  await supabase
+    .from('product_matches')
+    .upsert({
+      user_id: userId,
+      product_id: productId,
+      match_percentage: matchPercentage,
+      expires_at: expiresAt.toISOString(),
+      calculated_at: new Date().toISOString()
+    });
+
+  return matchPercentage;
+}
+
+// ❌ INCORRECTO - Sin caché, desperdicia recursos
+async function calculateProductMatch(userId: string, productId: string) {
+  const profile = await getUserProfile(userId);
+  const product = await getProduct(productId);
+  return await callClaudeAPI(profile, product); // Llamada costosa cada vez
+}
+```
+
+### Estado Global (Zustand)
+```typescript
+// ✅ CORRECTO - Store optimizado
+// features/cart/store/cartStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface CartItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+interface CartStore {
+  items: CartItem[];
+  addItem: (item: CartItem) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  getTotal: () => number;
+}
+
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      
+      addItem: (item) => set((state) => {
+        const existing = state.items.find(i => i.productId === item.productId);
+        if (existing) {
+          return {
+            items: state.items.map(i =>
+              i.productId === item.productId
+                ? { ...i, quantity: i.quantity + item.quantity }
+                : i
+            )
+          };
+        }
+        return { items: [...state.items, item] };
+      }),
+      
+      removeItem: (productId) => set((state) => ({
+        items: state.items.filter(i => i.productId !== productId)
+      })),
+      
+      updateQuantity: (productId, quantity) => set((state) => ({
+        items: state.items.map(i =>
+          i.productId === productId ? { ...i, quantity } : i
+        )
+      })),
+      
+      clearCart: () => set({ items: [] }),
+      
+      getTotal: () => {
+        const items = get().items;
+        return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      }
+    }),
+    { name: 'cart-storage' }
+  )
+);
+
+// ❌ INCORRECTO - Sin persist, sin tipado
+export const useCartStore = create((set) => ({
+  items: [],
+  addItem: (item) => set((state) => ({ items: [...state.items, item] }))
+}));
+```
+
+### Formularios
+```typescript
+// ✅ CORRECTO - React Hook Form + Zod + shadcn
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+const loginSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(8, 'Mínimo 8 caracteres')
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export function LoginForm() {
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  });
+
+  async function onSubmit(data: LoginFormData) {
+    // Implementación completa
+    const { error } = await signIn(data);
+    if (error) {
+      form.setError('root', { message: error.message });
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          Iniciar Sesión
+        </Button>
+      </form>
+    </Form>
+  );
+}
+
+// ❌ INCORRECTO - Sin validación, sin shadcn
+export function LoginForm() {
+  const [email, setEmail] = useState('');
+  
+  return (
+    <form>
+      <input 
+        type="email" 
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+    </form>
+  );
+}
+```
+
+### Performance y Optimización
+```typescript
+// ✅ CORRECTO - Lazy loading
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ProductComparator = dynamic(
+  () => import('@/features/ai/components/ProductComparator'),
+  { 
+    loading: () => <Skeleton className="h-96" />,
+    ssr: false 
+  }
+);
+
+// ✅ CORRECTO - Memoization apropiado
+import { memo, useMemo } from 'react';
+
+interface ProductGridProps {
+  products: Product[];
+  filters: ProductFilters;
+}
+
+export const ProductGrid = memo(function ProductGrid({ 
+  products, 
+  filters 
+}: ProductGridProps) {
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      if (filters.brand && p.brand_id !== filters.brand) return false;
+      if (filters.minPrice && p.price_pyg < filters.minPrice) return false;
+      return true;
+    });
+  }, [products, filters]);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {filteredProducts.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+});
+
+// ❌ INCORRECTO - Re-render innecesario, filtrado en cada render
+export function ProductGrid({ products, filters }) {
+  return (
+    <div>
+      {products.filter(p => p.brand_id === filters.brand).map(product => (
+        <ProductCard product={product} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Imágenes
+```typescript
+// ✅ CORRECTO - next/image optimizado
+import Image from 'next/image';
+
+export function ProductCard({ product }: { product: Product }) {
+  return (
+    <div>
+      <Image
+        src={product.main_image_url}
+        alt={product.name}
+        width={300}
+        height={300}
+        className="object-cover rounded-semi"
+        priority={false}
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
+// ❌ INCORRECTO - img tag
+export function ProductCard({ product }) {
+  return <img src={product.image} alt={product.name} />;
+}
+```
+
+### Error Handling
+```typescript
+// ✅ CORRECTO - Manejo completo de errores
+async function createOrder(orderData: CreateOrderData) {
+  try {
+    // Validación
+    const validated = orderSchema.parse(orderData);
+    
+    // Verificar stock
+    const product = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', validated.productId)
+      .single();
+    
+    if (!product.data || product.data.stock < validated.quantity) {
+      return {
+        success: false,
+        error: 'Stock insuficiente'
+      };
+    }
+    
+    // Crear orden
+    const { data, error } = await supabase
+      .from('orders')
+      .insert(validated)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating order:', error);
+      return {
+        success: false,
+        error: 'Error al crear la orden'
+      };
+    }
+    
+    return {
+      success: true,
+      data
+    };
+    
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: 'Datos inválidos',
+        details: error.errors
+      };
+    }
+    
+    console.error('Unexpected error:', error);
+    return {
+      success: false,
+      error: 'Error inesperado'
+    };
+  }
+}
+
+// ❌ INCORRECTO - Sin manejo de errores
+async function createOrder(orderData) {
+  const { data } = await supabase.from('orders').insert(orderData);
+  return data;
+}
+```
+
+### Tailwind CSS
+```typescript
+// ✅ CORRECTO - Mobile-first, design tokens
+<div className="w-full md:w-1/2 lg:w-1/3 p-4 bg-primary-50 rounded-semi">
+  <h2 className="text-xl md:text-2xl font-bold text-primary-900">
+    Título
+  </h2>
+</div>
+
+// ❌ INCORRECTO - Desktop-first, valores hardcodeados
+<div className="lg:w-1/3 md:w-1/2 w-full p-4" style={{backgroundColor: '#f3e8ff'}}>
+  <h2 style={{fontSize: '24px', color: '#581c87'}}>
+    Título
+  </h2>
+</div>
+
+// ✅ CORRECTO - Usar cn() para condicionales
+import { cn } from '@/lib/utils/cn';
+
+<Button 
+  className={cn(
+    "w-full",
+    isLoading && "opacity-50 cursor-not-allowed",
+    variant === 'primary' && "bg-primary-500 hover:bg-primary-600"
+  )}
+>
+  {children}
+</Button>
+
+// ❌ INCORRECTO - String interpolation
+<Button 
+  className={`w-full ${isLoading ? 'opacity-50' : ''} ${variant === 'primary' ? 'bg-primary-500' : ''}`}
+>
+  {children}
+</Button>
+```
+
+---
+
+## 🚫 PROHIBIDO ABSOLUTAMENTE
+
+### 1. Código Temporal
+```typescript
+// ❌ NUNCA HACER ESTO
+function ProductCard() {
+  // TODO: Implementar match badge
+  return <div>Product</div>;
+}
+
+// ❌ NUNCA HACER ESTO
+const mockData = [/* ... */]; // Usar mientras conectamos la DB
+
+// ❌ NUNCA HACER ESTO
+// Comentar código para "más tarde"
+// async function fetchProducts() {
+//   const data = await fetch('/api/products');
+// }
+```
+
+### 2. Componentes UI Custom sin Razón
+```typescript
+// ❌ NUNCA - crear button custom
+export function Button({ children }) {
+  return <button className="btn">{children}</button>;
+}
+
+// ✅ SIEMPRE - usar shadcn
+import { Button } from '@/components/ui/button';
+
+export function MyComponent() {
+  return <Button>Click me</Button>;
+}
+```
+
+### 3. Queries No Optimizadas
+```typescript
+// ❌ NUNCA
+const { data } = await supabase.from('products').select('*');
+
+// ❌ NUNCA - queries en loop
+for (const id of ids) {
+  await supabase.from('products').select('*').eq('id', id);
+}
+
+// ❌ NUNCA - sin paginación en listas
+const { data } = await supabase.from('products').select('id, name');
+
+// ✅ SIEMPRE
+const { data } = await supabase
+  .from('products')
+  .select('id, name, price_pyg, main_image_url')
+  .eq('is_active', true)
+  .range(0, 19)
+  .order('created_at', { ascending: false });
+```
+
+### 4. Imports y Exports Incorrectos
+```typescript
+// ❌ INCORRECTO - default export de componentes
+export default function ProductCard() { }
+
+// ✅ CORRECTO - named export
+export function ProductCard() { }
+
+// ✅ CORRECTO - default export solo en pages
+// app/products/page.tsx
+export default function ProductsPage() { }
+
+// ❌ INCORRECTO - imports relativos profundos
+import { Button } from '../../../components/ui/button';
+
+// ✅ CORRECTO - imports absolutos
+import { Button } from '@/components/ui/button';
+```
+
+---
+
+## ✅ CHECKLIST ANTES DE COMMIT
+
+Antes de cada commit, verificar:
+
+- [ ] TypeScript compila sin errores: `bun run build`
+- [ ] No hay imports no utilizados
+- [ ] No hay variables no utilizadas
+- [ ] Todos los componentes UI son de shadcn
+- [ ] Todas las queries de Supabase están optimizadas
+- [ ] Implementé caché donde es apropiado
+- [ ] No hay código comentado o TODOs
+- [ ] Error handling completo en funciones críticas
+- [ ] Imágenes usando next/image
+- [ ] Loading states implementados
+- [ ] Componentes están correctamente tipados
+- [ ] Named exports en componentes reutilizables
+
+---
+
+## 📚 EJEMPLOS COMPLETOS
+
+### Página Completa con Best Practices
+```typescript
+// app/products/[slug]/page.tsx
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getProductBySlug, getSimilarProducts } from '@/features/products/services/productService';
+import { AddToCartButton } from '@/features/cart/components/AddToCartButton';
+import { WishlistButton } from '@/features/wishlist/components/WishlistButton';
+import { ProductGrid } from '@/features/products/components/ProductGrid';
+
+interface ProductPageProps {
+  params: { slug: string };
+}
+
+export async function generateMetadata({ params }: ProductPageProps) {
+  const product = await getProductBySlug(params.slug);
+  
+  if (!product) return { title: 'Producto no encontrado' };
+  
+  return {
+    title: `${product.name} - Aura Perfumes`,
+    description: product.description,
+    openGraph: {
+      images: [product.main_image_url]
+    }
+  };
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  const [product, similarProducts] = await Promise.all([
+    getProductBySlug(params.slug),
+    getSimilarProducts(params.slug, 4)
+  ]);
+  
+  if (!product) notFound();
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <Image
+            src={product.main_image_url}
+            alt={product.name}
+            width={600}
+            height={600}
+            className="w-full rounded-semi"
+            priority
+          />
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <Badge variant="secondary">{product.brand.name}</Badge>
+            <h1 className="text-4xl font-bold mt-2">{product.name}</h1>
+          </div>
+          
+          <p className="text-2xl font-semibold">
+            ₲ {product.price_pyg.toLocaleString('es-PY')}
+          </p>
+          
+          <p className="text-neutral-600">{product.description}</p>
+          
+          <div className="flex gap-2">
+            <AddToCartButton product={product} />
+            <WishlistButton productId={product.id} />
+          </div>
+          
+          {product.stock < 10 && product.stock > 0 && (
+            <Badge variant="destructive">
+              Solo quedan {product.stock} unidades
+            </Badge>
+          )}
+        </div>
+      </div>
+      
+      {similarProducts.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Productos Similares</h2>
+          <ProductGrid products={similarProducts} />
+        </section>
+      )}
+    </div>
+  );
+}
+```
+
+### Service con Best Practices
+```typescript
+// features/products/services/productService.ts
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { cache } from 'react';
+import type { Database } from '@/types/database.types';
+
+type Product = Database['public']['Tables']['products']['Row'];
+
+// Cache en Server Components
+export const getProducts = cache(async (
+  page: number = 1,
+  limit: number = 20,
+  filters?: {
+    brandId?: string;
+    familyId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  }
+) => {
+  const supabase = createServerComponentClient<Database>({ cookies });
+  
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from('products')
+    .select(`
+      id,
+      name,
+      slug,
+      price_pyg,
+      discount_percentage,
+      main_image_url,
+      stock,
+      brand:brands(
+        id,
+        name,
+        slug
+      )
+    `)
+    .eq('is_active', true);
+
+  // Aplicar filtros
+  if (filters?.brandId) {
+    query = query.eq('brand_id', filters.brandId);
+  }
+  
+  if (filters?.minPrice) {
+    query = query.gte('price_pyg', filters.minPrice);
+  }
+  
+  if (filters?.maxPrice) {
+    query = query.lte('price_pyg', filters.maxPrice);
+  }
+
+  const { data, error, count } = await query
+    .range(from, to)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching products:', error);
+    throw new Error('Error al obtener productos');
+  }
+
+  return {
+    products: data || [],
+    pagination: {
+      page,
+      limit,
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  };
+});
+
+export const getProductBySlug = cache(async (slug: string) => {
+  const supabase = createServerComponentClient<Database>({ cookies });
+
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      brand:brands(
+        id,
+        name,
+        slug,
+        logo_url
+      ),
+      families:product_families(
+        family:olfactory_families(
+          id,
+          name,
+          slug
+        )
+      )
+    `)
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single();
+
+  if (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
+
+  return data;
+});
+```
+
+---
+
+## 🎯 PATRONES ESPECÍFICOS DEL PROYECTO
+
+### Cálculo de Match con IA
+```typescript
+// features/ai/services/aiMatcherService.ts
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+});
+
+export async function calculateProductMatch(
+  userId: string,
+  productId: string
+): Promise<number> {
+  const supabase = createRouteHandlerClient({ cookies });
+
+  // 1. Verificar caché primero
+  const { data: cached } = await supabase
+    .from('product_matches')
+    .select('match_percentage, expires_at')
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .single();
+
+  if (cached && new Date(cached.expires_at) > new Date()) {
+    return cached.match_percentage;
+  }
+
+  // 2. Obtener datos necesarios
+  const [profile, product] = await Promise.all([
+    supabase
+      .from('user_profiles')
+      .select('preferences')
+      .eq('user_id', userId)
+      .single(),
+    supabase
+      .from('products')
+      .select(`
+        id,
+        name,
+        notes,
+        characteristics,
+        families:product_families(
+          family:olfactory_families(name)
+        )
+      `)
+      .eq('id', productId)
+      .single()
+  ]);
+
+  if (!profile.data || !product.data) {
+    throw new Error('Datos no encontrados');
+  }
+
+  // 3. Llamar a Claude API
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    messages: [{
+      role: 'user',
+      content: `Calcula el match entre este perfil de usuario y este producto.
+      
+Perfil del usuario:
+${JSON.stringify(profile.data.preferences, null, 2)}
+
+Producto:
+${JSON.stringify(product.data, null, 2)}
+
+Responde SOLO con un número del 0 al 100 que represente el porcentaje de match.`
+    }]
+  });
+
+  const matchPercentage = parseInt(message.content[0].text.trim());
+
+  // 4. Guardar en caché
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
+
+  await supabase
+    .from('product_matches')
+    .upsert({
+      user_id: userId,
+      product_id: productId,
+      match_percentage: matchPercentage,
+      expires_at: expiresAt.toISOString(),
+      calculated_at: new Date().toISOString()
+    });
+
+  return matchPercentage;
+}
+```
+
+---
+
+## 🎯 RESUMEN EJECUTIVO
+
+### OBLIGATORIO
+1. ✅ Código de producción siempre (no placeholders, no TODOs)
+2. ✅ `bun run build` al final de cada sprint
+3. ✅ shadcn/ui para TODOS los componentes UI
+4. ✅ Queries optimizadas (select específico, paginación, caché)
+5. ✅ TypeScript estricto (sin any)
+6. ✅ Server Components por defecto
+7. ✅ Named exports en componentes
+8. ✅ Error handling completo
+
+### PROHIBIDO
+1. ❌ Código temporal o comentado
+2. ❌ Crear componentes UI custom si existe en shadcn
+3. ❌ select('*') sin razón
+4. ❌ Queries en loops
+5. ❌ any en TypeScript
+6. ❌ Client Components innecesarios
+7. ❌ Imports relativos profundos
+8. ❌ <img> en vez de <Image>
+
+**Estas reglas son OBLIGATORIAS y no negociables.**
+
+---
