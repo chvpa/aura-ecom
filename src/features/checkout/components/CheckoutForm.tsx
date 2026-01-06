@@ -64,10 +64,14 @@ export function CheckoutForm({ onDepartmentChange }: CheckoutFormProps) {
           const addresses = await getSavedAddressesClient(user.id);
           setSavedAddresses(addresses);
           
-          // Si hay una dirección por defecto, cargarla
+          // Si hay una dirección por defecto, cargarla automáticamente
           const defaultAddress = addresses.find(addr => addr.is_default);
           if (defaultAddress) {
-            form.setValue('shipping', savedAddressToShippingAddress(defaultAddress));
+            const shippingAddress = savedAddressToShippingAddress(defaultAddress);
+            // Usar setTimeout para asegurar que el form esté listo
+            setTimeout(() => {
+              form.setValue('shipping', shippingAddress, { shouldValidate: false });
+            }, 0);
           }
         }
       } catch (error) {
@@ -144,6 +148,11 @@ export function CheckoutForm({ onDepartmentChange }: CheckoutFormProps) {
           const { data: { user } } = await supabase.auth.getUser();
           
           if (user) {
+            // Verificar si ya existe una dirección por defecto
+            const hasDefaultAddress = savedAddresses.some(addr => addr.is_default);
+            
+            // Marcar como default si no hay ninguna dirección default, o siempre marcar como default
+            // ya que el usuario está usando esta dirección en el checkout actual
             await saveAddressClient(user.id, {
               label: addressLabel,
               full_name: data.shipping.full_name,
@@ -152,7 +161,7 @@ export function CheckoutForm({ onDepartmentChange }: CheckoutFormProps) {
               city: data.shipping.city,
               street: data.shipping.street,
               reference: data.shipping.reference,
-              is_default: savedAddresses.length === 0, // Primera dirección es por defecto
+              is_default: true, // Siempre marcar como default la dirección que se está usando
             });
           }
         } catch (saveError) {

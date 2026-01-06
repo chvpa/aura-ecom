@@ -211,7 +211,7 @@ export function OrderDetailClient({ order }: OrderDetailClientProps) {
           {reordering ? 'Agregando...' : 'Re-ordenar'}
         </Button>
         <Button variant="outline" asChild className="flex-1">
-          <Link href="/productos">Seguir Comprando</Link>
+          <Link href="/perfumes">Seguir Comprando</Link>
         </Button>
       </div>
     </div>
