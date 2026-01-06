@@ -51,7 +51,8 @@ export async function getSavedAddressesClient(userId: string): Promise<SavedAddr
 }
 
 /**
- * Guarda una nueva dirección (cliente)
+ * Guarda o actualiza una dirección (cliente)
+ * Usa upsert basado en user_id + label para evitar duplicados
  */
 export async function saveAddressClient(
   userId: string,
@@ -61,20 +62,32 @@ export async function saveAddressClient(
 
   // Si se marca como default, asegurar que solo haya una
   if (addressData.is_default) {
-    await (supabase
-      .from('saved_addresses') as any)
+    await supabase
+      .from('saved_addresses')
       .update({ is_default: false })
       .eq('user_id', userId)
       .eq('is_default', true);
   }
 
-  const insertPayload = {
+  const upsertPayload = {
     user_id: userId,
-    ...addressData,
+    label: addressData.label,
+    full_name: addressData.full_name,
+    phone: addressData.phone,
+    department: addressData.department,
+    city: addressData.city,
+    street: addressData.street,
+    reference: addressData.reference || null,
+    is_default: addressData.is_default ?? false,
   };
-  const { data, error } = await (supabase
-    .from('saved_addresses') as any)
-    .insert(insertPayload)
+
+  // Usar upsert con onConflict para actualizar si ya existe una dirección con el mismo label
+  const { data, error } = await supabase
+    .from('saved_addresses')
+    .upsert(upsertPayload, {
+      onConflict: 'user_id,label',
+      ignoreDuplicates: false,
+    })
     .select()
     .single();
 
