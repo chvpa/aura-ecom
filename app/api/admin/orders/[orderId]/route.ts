@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isAdmin } from '@/lib/utils/admin';
-import { getUserOrderById } from '@/features/orders/services/orderService';
 import {
   updateOrderStatus,
   updateOrderTracking,
   updateOrderPaymentStatus,
 } from '@/features/admin/services/adminService';
-import type { Database } from '@/types/database.types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,12 +46,15 @@ export async function GET(
       );
     }
 
+    // Usar cliente admin para bypasear RLS y poder ver órdenes de todos los usuarios
+    const adminSupabase = createAdminClient();
+
     // Para admin, obtener orden sin verificar user_id
-    const { data: order, error: orderError } = await (supabase
-      .from('orders') as any)
+    const { data: order, error: orderError } = await adminSupabase
+      .from('orders')
       .select('*')
       .eq('id', orderId)
-      .single() as { data: Database['public']['Tables']['orders']['Row'] | null; error: any };
+      .single();
 
     if (orderError || !order) {
       return NextResponse.json(
@@ -65,8 +66,8 @@ export async function GET(
       );
     }
 
-    // Obtener items
-    const { data: orderItems } = await supabase
+    // Obtener items usando cliente admin
+    const { data: orderItems } = await adminSupabase
       .from('order_items')
       .select('*, products(*)')
       .eq('order_id', orderId);
