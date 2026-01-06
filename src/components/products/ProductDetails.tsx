@@ -230,8 +230,8 @@ export function ProductDetails({
           {/* Trust Badges */}
           <ProductTrustBadges />
           
-          {/* Botones de acción */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Botones de acción - Solo visible en desktop */}
+          <div className="hidden md:flex flex-col sm:flex-row gap-3">
             <Button
               size="lg"
               className="flex-1 font-semibold bg-green-600 hover:bg-green-700 text-white"
