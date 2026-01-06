@@ -7,8 +7,10 @@ export const siteConfig = {
   url: SITE_URL,
   ogImage: `${SITE_URL}/og-image.jpg`,
   links: {
-    twitter: "https://twitter.com/odoraperfumes",
-    github: "https://github.com/odora-perfumes",
+    instagram: "https://www.instagram.com/odoraimports",
+    tiktok: "https://www.tiktok.com/@odoraimports",
+    email: "odoraimports@gmail.com",
+    phone: "0972137968",
   },
 } as const;
 
@@ -44,7 +46,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    creator: "@odoraperfumes",
+    creator: "@odoraimports",
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  verification: {
+    // Agregar códigos de verificación cuando estén disponibles
+    // google: "your-google-verification-code",
+    // yandex: "your-yandex-verification-code",
   },
   robots: {
     index: true,
