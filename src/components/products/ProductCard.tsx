@@ -103,18 +103,16 @@ export function ProductCard({
           </Link>
           <div className="mt-auto">
             {hasDiscount && priceInfo ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-primary">
-                    {priceInfo.discounted}
-                  </span>
-                  <span className="text-sm text-muted-foreground line-through">
-                    {priceInfo.original}
-                  </span>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-red-800/70 line-through">
+                  {priceInfo.original}
+                </span>
+                <span className="text-lg font-bold text-black">
+                  {priceInfo.discounted}
+                </span>
               </div>
             ) : (
-              <p className="text-lg font-bold text-primary">
+              <p className="text-lg font-bold text-black">
                 {formatPrice(product.price_pyg)}
               </p>
             )}
@@ -122,7 +120,7 @@ export function ProductCard({
         </CardContent>
         <CardFooter className="p-4 pt-0 flex gap-2">
           <Button
-            className="flex-1"
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             size="sm"
             onClick={handleAddToCart}
             disabled={product.stock === 0}
