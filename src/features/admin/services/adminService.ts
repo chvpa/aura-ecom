@@ -163,9 +163,15 @@ export async function getAllOrders(
         .select('*, products(*)')
         .eq('order_id', order.id);
 
+      // Transformar la estructura de datos de Supabase
+      const items = (orderItems || []).map((item: any) => ({
+        ...item,
+        product: item.products || item.product,
+      })).filter((item: any) => item.product) as Array<OrderItem & { product: Product }>;
+
       return {
         ...order,
-        items: (orderItems || []) as Array<OrderItem & { product: Product }>,
+        items,
       };
     })
   );
