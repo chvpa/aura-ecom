@@ -46,7 +46,7 @@ export async function generateMetadata({
       description,
       images: [
         {
-          url: product.main_image_url,
+          url: product.main_image_url || '/placeholder-product.jpg',
           width: 1200,
           height: 630,
           alt: product.name,
@@ -59,7 +59,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: `${product.name} | ${brandName}`,
       description,
-      images: [product.main_image_url],
+      images: [product.main_image_url || '/placeholder-product.jpg'],
     },
     alternates: {
       canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/perfumes/${slug}`,

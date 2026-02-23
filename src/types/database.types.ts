@@ -218,10 +218,10 @@ export type Database = {
           notes?: string | null
           order_number: string
           payment_method: string
-          payment_status?: string
-          shipping_address?: Json
-          shipping_cost_pyg?: number
-          status?: string
+          payment_status: string
+          shipping_address: Json
+          shipping_cost_pyg: number
+          status: string
           subtotal_pyg: number
           total_pyg: number
           tracking_number?: string | null
@@ -247,59 +247,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "orders_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      saved_addresses: {
-        Row: {
-          id: string
-          user_id: string
-          label: string
-          full_name: string
-          phone: string
-          department: string
-          city: string
-          street: string
-          reference: string | null
-          is_default: boolean | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          label: string
-          full_name: string
-          phone: string
-          department: string
-          city: string
-          street: string
-          reference?: string | null
-          is_default?: boolean | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          label?: string
-          full_name?: string
-          phone?: string
-          department?: string
-          city?: string
-          street?: string
-          reference?: string | null
-          is_default?: boolean | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "saved_addresses_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -452,7 +399,7 @@ export type Database = {
           is_featured: boolean | null
           longevity_hours: number | null
           main_accords: Json | null
-          main_image_url: string
+          main_image_url: string | null
           meta_description: string | null
           meta_title: string | null
           name: string
@@ -482,10 +429,9 @@ export type Database = {
           id?: string
           images?: Json | null
           is_active?: boolean | null
-          is_featured?: boolean | null
           longevity_hours?: number | null
           main_accords?: Json | null
-          main_image_url: string
+          main_image_url?: string | null
           meta_description?: string | null
           meta_title?: string | null
           name: string
@@ -518,7 +464,7 @@ export type Database = {
           is_featured?: boolean | null
           longevity_hours?: number | null
           main_accords?: Json | null
-          main_image_url?: string
+          main_image_url?: string | null
           meta_description?: string | null
           meta_title?: string | null
           name?: string
@@ -544,12 +490,58 @@ export type Database = {
           },
         ]
       }
+      saved_addresses: {
+        Row: {
+          city: string
+          created_at: string | null
+          department: string
+          full_name: string
+          id: string
+          is_default: boolean | null
+          label: string
+          phone: string
+          reference: string | null
+          street: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          department: string
+          full_name: string
+          id?: string
+          is_default?: boolean | null
+          label: string
+          phone: string
+          reference?: string | null
+          street: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          department?: string
+          full_name?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          phone?: string
+          reference?: string | null
+          street?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null
           id: string
           onboarding_completed: boolean | null
           preferences: Json | null
+          role: string
           updated_at: string | null
           user_id: string
         }
@@ -558,6 +550,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean | null
           preferences?: Json | null
+          role?: string
           updated_at?: string | null
           user_id: string
         }
@@ -566,6 +559,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean | null
           preferences?: Json | null
+          role?: string
           updated_at?: string | null
           user_id?: string
         }

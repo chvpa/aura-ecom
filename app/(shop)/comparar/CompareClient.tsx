@@ -126,7 +126,7 @@ export function CompareClient() {
       quantity: 1,
       price: product.price_pyg,
       name: product.name,
-      image: product.main_image_url,
+      image: product.main_image_url || '/placeholder-product.jpg',
       slug: product.slug,
       stock: product.stock,
     });
@@ -175,7 +175,7 @@ export function CompareClient() {
                 <Link href={`/perfumes/${product.slug}`}>
                   <div className="relative aspect-square rounded-lg overflow-hidden bg-neutral-100">
                     <Image
-                      src={product.main_image_url}
+                      src={product.main_image_url || '/placeholder-product.jpg'}
                       alt={product.name}
                       fill
                       className="object-cover"
@@ -291,7 +291,7 @@ export function CompareClient() {
                         >
                           <div className="relative h-12 w-12 rounded overflow-hidden bg-neutral-100 flex-shrink-0">
                             <Image
-                              src={product.main_image_url}
+                              src={product.main_image_url || '/placeholder-product.jpg'}
                               alt={product.name}
                               fill
                               className="object-cover"

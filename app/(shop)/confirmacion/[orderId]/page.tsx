@@ -192,7 +192,7 @@ export default async function ConfirmationPage({
                   return (
                     <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
                       <OrderItemImage
-                        src={item.product.main_image_url}
+                        src={item.product.main_image_url || '/placeholder-product.jpg'}
                         alt={item.product.name || 'Producto'}
                         fallback={false}
                       />

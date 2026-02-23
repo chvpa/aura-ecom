@@ -43,7 +43,7 @@ export function ProductDetails({
       quantity: 1,
       price: product.price_pyg,
       name: product.name,
-      image: product.main_image_url,
+      image: product.main_image_url || '/placeholder-product.jpg',
       slug: product.slug,
       stock: product.stock,
     });
@@ -63,7 +63,7 @@ export function ProductDetails({
       {/* Galería */}
       <div>
         <ProductGallery
-          mainImage={product.main_image_url}
+          mainImage={product.main_image_url || '/placeholder-product.jpg'}
           images={images}
           productName={product.name}
         />

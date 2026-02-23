@@ -39,7 +39,7 @@ export function ProductCard({
       quantity: 1,
       price: product.price_pyg,
       name: product.name,
-      image: product.main_image_url,
+      image: product.main_image_url || '/placeholder-product.jpg',
       slug: product.slug,
       stock: product.stock,
     });
@@ -64,7 +64,7 @@ export function ProductCard({
           <Link href={`/perfumes/${product.slug}`}>
             <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
               <Image
-                src={product.main_image_url}
+                src={product.main_image_url || '/placeholder-product.jpg'}
                 alt={product.name}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"

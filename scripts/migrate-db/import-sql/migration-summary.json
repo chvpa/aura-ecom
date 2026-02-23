@@ -1,0 +1,67 @@
+{
+  "exportedAt": "2026-02-23T22:28:46.118Z",
+  "oldDatabaseUrl": "https://qepynqaeaocatjlbacih.supabase.co",
+  "tables": [
+    {
+      "table": "auth.users",
+      "count": 4
+    },
+    {
+      "table": "brands",
+      "count": 8
+    },
+    {
+      "table": "olfactory_families",
+      "count": 8
+    },
+    {
+      "table": "users",
+      "count": 4
+    },
+    {
+      "table": "user_profiles",
+      "count": 1
+    },
+    {
+      "table": "products",
+      "count": 8
+    },
+    {
+      "table": "product_families",
+      "count": 24
+    },
+    {
+      "table": "wishlists",
+      "count": 2
+    },
+    {
+      "table": "orders",
+      "count": 19
+    },
+    {
+      "table": "order_items",
+      "count": 24
+    },
+    {
+      "table": "product_matches",
+      "count": 8
+    },
+    {
+      "table": "ai_search_history",
+      "count": 31
+    },
+    {
+      "table": "product_comparisons",
+      "count": 0
+    },
+    {
+      "table": "notifications",
+      "count": 0
+    },
+    {
+      "table": "saved_addresses",
+      "count": 1
+    }
+  ],
+  "totalRecords": 142
+}

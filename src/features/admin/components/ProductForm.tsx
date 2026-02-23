@@ -147,7 +147,7 @@ export function ProductForm({ product, brands }: ProductFormProps) {
               )
             : null,
           images: (product.images as string[]) || [],
-          main_image_url: product.main_image_url,
+          main_image_url: product.main_image_url || undefined,
           is_active: product.is_active ?? true,
           is_featured: product.is_featured ?? false,
           meta_title: product.meta_title || null,

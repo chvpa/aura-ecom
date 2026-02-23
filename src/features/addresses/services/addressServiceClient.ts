@@ -62,8 +62,8 @@ export async function saveAddressClient(
 
   // Si se marca como default, asegurar que solo haya una
   if (addressData.is_default) {
-    await supabase
-      .from('saved_addresses')
+    await (supabase
+      .from('saved_addresses') as any)
       .update({ is_default: false })
       .eq('user_id', userId)
       .eq('is_default', true);
@@ -82,8 +82,8 @@ export async function saveAddressClient(
   };
 
   // Usar upsert con onConflict para actualizar si ya existe una dirección con el mismo label
-  const { data, error } = await supabase
-    .from('saved_addresses')
+  const { data, error } = await (supabase
+    .from('saved_addresses') as any)
     .upsert(upsertPayload, {
       onConflict: 'user_id,label',
       ignoreDuplicates: false,
